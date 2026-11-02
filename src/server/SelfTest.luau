@@ -48,10 +48,10 @@ function SelfTest.run(): { string }
 		end
 		local islands, houses = 0, 0
 		for _, c in f:GetChildren() do
-			if c.Name:sub(1, 7) == "Island_" then
+			if string.sub(c.Name, 1, 7) == "Island_" then
 				islands += 1
 				for _, h in c:GetChildren() do
-					if h.Name:sub(1, 6) == "House_" then
+					if string.sub(h.Name, 1, 6) == "House_" then
 						houses += 1
 					end
 				end

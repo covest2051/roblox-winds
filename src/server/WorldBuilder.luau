@@ -100,7 +100,7 @@ local ROOFS = {
 	Color3.fromRGB(120, 90, 70),
 }
 
-local function house(w, h, folder: Instance, rng, isPost: boolean): Model
+local function house(h, folder: Instance, rng, isPost: boolean): Model
 	local m = Make("Model", { Name = "House_" .. h.id, Attributes = { HouseId = h.id }, Parent = folder })
 	local hgt = h.roof - h.base
 	local wallColor = if isPost then Color3.fromRGB(255, 210, 120) else WALLS[rng:int(1, #WALLS)]
@@ -298,7 +298,7 @@ local function island(w, isl, folder: Instance, rng): Model
 		inner
 	)
 	for i, hid in isl.houses do
-		house(w, w.houses[hid], m, rng, isl.harbor and i == 1)
+		house(w.houses[hid], m, rng, isl.harbor and i == 1)
 	end
 	for _, t in isl.trees do
 		tree(t, isl.top, m, rng)

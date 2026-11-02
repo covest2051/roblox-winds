@@ -461,6 +461,8 @@ for _, e in
 		{ "UserInputService", "InputBegan" },
 		{ "UserInputService", "InputEnded" },
 		{ "TextButton", "Activated" },
+		{ "TextButton", "InputBegan" },
+		{ "TextButton", "InputEnded" },
 		{ "Sound", "Ended" },
 		{ "Instance", "DescendantAdded" },
 		{ "Instance", "DescendantRemoving" },
@@ -499,7 +501,20 @@ roblox.implementMethod("ContextActionService", "BindAction", function(_, name, f
 	Sim.actions = Sim.actions or {}
 	Sim.actions[name] = fn
 end)
+roblox.implementMethod("ContextActionService", "BindActionAtPriority", function(_, name, fn)
+	Sim.actions = Sim.actions or {}
+	Sim.actions[name] = fn
+end)
 roblox.implementMethod("ContextActionService", "SetTitle", function() end)
+roblox.implementMethod("WorldRoot", "BulkMoveTo", function(_, parts, cfs)
+	for i, part in parts do
+		part.CFrame = cfs[i]
+	end
+end)
+roblox.implementMethod("Humanoid", "SetStateEnabled", function(self, state, on)
+	Sim.humanoidStates = Sim.humanoidStates or {}
+	Sim.humanoidStates[state.Name] = on
+end)
 roblox.implementMethod("ContextActionService", "SetPosition", function() end)
 roblox.implementMethod("StarterGui", "SetCoreGuiEnabled", function() end)
 roblox.implementMethod("StarterGui", "SetCore", function() end)

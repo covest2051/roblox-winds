@@ -15,6 +15,7 @@ local Net = require(Shared.Net)
 local Parcel = require(Shared.Parcel)
 local Profile = require(Shared.Profile)
 local Winds = require(Shared.Winds)
+local World = require(Shared.World)
 
 local Data = require(script.Parent.DataService)
 local Monetization = require(script.Parent.Monetization)
@@ -166,11 +167,21 @@ local function debugCmd(player: Player, cmd: string, arg: any): string?
 		return "→ finish"
 	elseif cmd == "splash" then
 		local x, _, z = FlightService.position(player)
-		if x then
-			-- над морем рядом
-			FlightService.teleport(player, x + 400, 0.5, z :: number, nil)
+		if not x then
+			return nil
 		end
-		return "splash"
+		-- ближайшее море по спирали
+		for i = 1, 60 do
+			local a = i * 0.9
+			local r = 60 + i * 12
+			local sx, sz = x + math.cos(a) * r, (z :: number) + math.sin(a) * r
+			local _, kind = World.groundAt(FlightService.world, sx, sz)
+			if kind == "water" then
+				FlightService.teleport(player, sx, 0.5, sz, nil)
+				return "splash"
+			end
+		end
+		return "no sea nearby"
 	elseif cmd == "order" then
 		local list = DeliveryService.ordersOf(player)
 		local o = list[1]
