@@ -1,0 +1,65 @@
+{
+	"name": "Winds",
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"Shared": {
+				"$path": "src/shared"
+			},
+			"Remotes": {
+				"$className": "Folder",
+				"ClientAction": {
+					"$className": "RemoteEvent"
+				},
+				"ServerEvent": {
+					"$className": "RemoteEvent"
+				}
+			}
+		},
+		"ServerScriptService": {
+			"Server": {
+				"$path": "src/server"
+			}
+		},
+		"StarterPlayer": {
+			"$properties": {
+				"CameraMaxZoomDistance": 160,
+				"CameraMinZoomDistance": 22,
+				"CharacterWalkSpeed": 16,
+				"CharacterJumpHeight": 0
+			},
+			"StarterPlayerScripts": {
+				"Client": {
+					"$path": "src/client"
+				}
+			}
+		},
+		"Lighting": {
+			"$properties": {
+				"ClockTime": 15.5,
+				"Brightness": 2.4,
+				"GlobalShadows": true,
+				"Ambient": [110, 120, 140],
+				"OutdoorAmbient": [150, 160, 180],
+				"EnvironmentDiffuseScale": 0.6,
+				"EnvironmentSpecularScale": 0.6
+			}
+		},
+		"Workspace": {
+			"$properties": {
+				"Gravity": 196.2,
+				"StreamingEnabled": false
+			}
+		},
+		"SoundService": {
+			"$properties": {
+				"RespectFilteringEnabled": true
+			}
+		},
+		"Players": {
+			"$properties": {
+				"CharacterAutoLoads": false
+			}
+		}
+	}
+}
