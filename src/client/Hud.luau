@@ -695,8 +695,26 @@ function Hud.setOrders(list: { any })
 	orders = list or {}
 end
 
+-- Гонка идёт для меня (по событиям сервера, не по атрибутам: событие может прийти раньше)
+function Hud.racing(): boolean
+	return race ~= nil
+end
+
+-- Номер следующего чекпоинта (1..total)
+function Hud.nextCp(): number
+	local attr = player:GetAttribute("Cp")
+	local n = if race then race.cp or 0 else 0
+	return math.max(n, if type(attr) == "number" then attr else 0) + 1
+end
+
+function Hud.cp(n: number)
+	if race then
+		race.cp = math.max(race.cp or 0, n)
+	end
+end
+
 function Hud.raceStart(p)
-	race = { checkpoints = p.checkpoints, goAt = p.goAt, total = #p.checkpoints, count = p.count }
+	race = { checkpoints = p.checkpoints, goAt = p.goAt, total = #p.checkpoints, count = p.count, cp = 0 }
 	standings = {}
 	refs.results.Visible = false
 end
@@ -780,9 +798,8 @@ Hud.screenAngle = screenAngle
 
 -- Цель сейчас: следующий чекпоинт или крыша заказа. Возвращает функцию «точка прицела для высоты y»
 local function currentGoal(world, winds): ((number) -> (number, number))?
-	if race and player:GetAttribute("Racing") == true then
-		local i = (player:GetAttribute("Cp") or 0) + 1
-		local c = race.checkpoints[i]
+	if race then
+		local c = race.checkpoints[Hud.nextCp()]
 		if c then
 			return function()
 				return c.x, c.z
@@ -865,11 +882,11 @@ end
 local function updateBanner()
 	local phase = Workspace:GetAttribute("Phase")
 	local st = Controls.state()
-	local racing = race ~= nil and player:GetAttribute("Racing") == true
+	local racing = race ~= nil
 	refs.optIn.Visible = not racing and phase ~= "race"
 	if racing and race then
 		local r = race :: any
-		local i = (player:GetAttribute("Cp") or 0) + 1
+		local i = Hud.nextCp()
 		local c = r.checkpoints[i]
 		local goAt = r.goAt or 0
 		local el = math.max(0, now() - goAt)
@@ -967,7 +984,7 @@ end
 
 local function updateOrder()
 	local o = orders[1]
-	local racing = race ~= nil and player:GetAttribute("Racing") == true
+	local racing = race ~= nil
 	refs.order.Visible = o ~= nil and not racing
 	if not o or racing then
 		return

@@ -53,6 +53,9 @@ local function invite()
 	end
 end
 
+WindFx.racing = Hud.racing
+WindFx.nextCp = Hud.nextCp
+
 Hud.onShop = function(tab)
 	if tab then
 		Shop.open(tab)
@@ -140,6 +143,7 @@ handlers.go = function()
 end
 
 handlers.cp = function(p)
+	Hud.cp(p.n)
 	Hud.toast(Lang.t("race.cp", { n = p.n, total = p.total }), C.sky)
 	Fx.play("Checkpoint")
 end

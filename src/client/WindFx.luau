@@ -9,7 +9,6 @@
 	  • доставка: маяк над крышей-целью и метка «куда упадёт посылка» с траекторией.
 ]]
 
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
@@ -25,7 +24,6 @@ local Controls = require(script.Parent.Controls)
 
 local WindFx = {}
 
-local player = Players.LocalPlayer
 local RH = Config.Flight.RootH
 local W = Config.Wind
 
@@ -42,6 +40,13 @@ local cpAcc = 0
 local lastLanding = nil
 
 WindFx.landing = nil :: any -- последняя метка падения (для HUD)
+-- гонка для меня и следующий чекпоинт (задаёт init по событиям сервера)
+WindFx.racing = function(): boolean
+	return false
+end
+WindFx.nextCp = function(): number
+	return 1
+end
 
 local AREA = 170 -- радиус облака лент вокруг камеры
 local PER_LAYER = 18
@@ -277,8 +282,8 @@ local function updateCourse()
 	if not course then
 		return
 	end
-	local racing = player:GetAttribute("Racing") == true
-	local nextI = (player:GetAttribute("Cp") or 0) + 1
+	local racing = WindFx.racing()
+	local nextI = WindFx.nextCp()
 	for _, m in course:GetChildren() do
 		local i = m:GetAttribute("Index")
 		local active = not racing or i == nextI
@@ -335,11 +340,7 @@ local function updateMarker(dt: number)
 	predictAcc = 0
 	local st = Controls.state()
 	local world, winds = Sky.world(), Sky.winds()
-	local show = st ~= nil
-		and world ~= nil
-		and winds ~= nil
-		and #orders > 0
-		and player:GetAttribute("Racing") ~= true
+	local show = st ~= nil and world ~= nil and winds ~= nil and #orders > 0 and not WindFx.racing()
 	if marker then
 		marker.Transparency = if show then 0.2 else 1
 	end
