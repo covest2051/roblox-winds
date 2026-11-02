@@ -126,9 +126,20 @@ end)
 -- Position/AssemblyLinearVelocity нельзя переопределить через implementProperty:
 -- игровой код читает CFrame.Position, а скорость задаём явно при создании персонажа.
 roblox.implementMethod("PVInstance", "PivotTo", function(self, cf)
-	local root = self:FindFirstChild("HumanoidRootPart") or self.PrimaryPart
-	if root then
-		root.CFrame = cf
+	if self:IsA("BasePart") then
+		self.CFrame = cf
+		return
+	end
+	local root = self.PrimaryPart or self:FindFirstChild("HumanoidRootPart")
+	if not root then
+		return
+	end
+	-- как в движке: модель двигается целиком
+	local delta = cf * root.CFrame:Inverse()
+	for _, d in self:GetDescendants() do
+		if d:IsA("BasePart") then
+			d.CFrame = delta * d.CFrame
+		end
 	end
 end)
 
@@ -416,8 +427,29 @@ roblox.implementMethod("SocialService", "PromptGameInvite", function(_, player)
 	Sim.invites = (Sim.invites or 0) + 1
 end)
 
--- Физики нет: игровой код двигает якорные детали сам, персонажей двигают тесты
-function Sim.stepPhysics() end
+-- Сиденье: Sit сажает (в движке Occupant только для чтения, в Lune можно записать)
+Sim.seated = {}
+roblox.implementMethod("Seat", "Sit", function(self, hum)
+	Sim.seated[self] = hum
+	self.Occupant = hum
+	if hum then
+		hum.Sit = true
+	end
+	signalOf(self, "Prop:Occupant"):Fire()
+end)
+
+-- Физики нет: игровой код двигает якорные детали сам, персонажей и шары двигают тесты.
+-- Sim.stepPhysics(dt) — интегрирует LinearVelocity незакреплённых корзин (клиентский тест).
+function Sim.stepPhysics(dt)
+	for _, d in Sim.game:GetService("Workspace"):GetDescendants() do
+		if d.ClassName == "LinearVelocity" and d.Parent and d.Parent:IsA("BasePart") then
+			local root = d.Parent
+			if not root.Anchored then
+				root.CFrame = root.CFrame + d.VectorVelocity * dt
+			end
+		end
+	end
+end
 
 -------------------------------------------------------------------------------
 -- Клиентские заглушки (сервер и клиент в одном DataModel)
@@ -519,6 +551,7 @@ local function makeEnv(script)
 		NumberSequence = roblox.NumberSequence,
 		NumberSequenceKeypoint = roblox.NumberSequenceKeypoint,
 		ColorSequence = roblox.ColorSequence,
+		ColorSequenceKeypoint = roblox.ColorSequenceKeypoint,
 		NumberRange = roblox.NumberRange,
 		Vector3int16 = roblox.Vector3int16,
 		Enum = roblox.Enum,
